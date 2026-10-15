@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "smart_finance.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public static final String T_CATEGORIES = "categories";
     public static final String T_TRANSACTIONS = "transactions";
@@ -48,7 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE " + T_TRANSACTIONS + " ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "amount_paise INTEGER NOT NULL CHECK(amount_paise > 0), "
+                + "amount REAL NOT NULL CHECK(amount > 0), "
                 + "type TEXT NOT NULL CHECK(type IN ('INCOME','EXPENSE')), "
                 + "category_id INTEGER NOT NULL REFERENCES " + T_CATEGORIES + "(id), "
                 + "description TEXT NOT NULL, "
@@ -62,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + T_BUDGETS + " ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "category_id INTEGER NOT NULL REFERENCES " + T_CATEGORIES + "(id) ON DELETE CASCADE, "
-                + "monthly_limit_paise INTEGER NOT NULL CHECK(monthly_limit_paise > 0), "
+                + "monthly_limit REAL NOT NULL CHECK(monthly_limit > 0), "
                 + "month_key TEXT NOT NULL, "
                 + "UNIQUE(category_id, month_key))");
 
@@ -70,10 +70,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name TEXT NOT NULL, "
                 + "lender TEXT, "
-                + "principal_paise INTEGER NOT NULL, "
+                + "principal REAL NOT NULL, "
                 + "annual_rate_percent REAL NOT NULL, "
                 + "tenure_months INTEGER NOT NULL, "
-                + "emi_paise INTEGER NOT NULL, "
+                + "emi_amount REAL NOT NULL, "
                 + "start_date INTEGER NOT NULL, "
                 + "status TEXT NOT NULL DEFAULT 'ACTIVE')");
 
@@ -82,10 +82,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "loan_id INTEGER NOT NULL REFERENCES " + T_LOANS + "(id) ON DELETE CASCADE, "
                 + "installment_no INTEGER NOT NULL, "
                 + "due_date INTEGER NOT NULL, "
-                + "emi_paise INTEGER NOT NULL, "
-                + "principal_paise INTEGER NOT NULL, "
-                + "interest_paise INTEGER NOT NULL, "
-                + "balance_paise INTEGER NOT NULL, "
+                + "emi_amount REAL NOT NULL, "
+                + "principal_amount REAL NOT NULL, "
+                + "interest_amount REAL NOT NULL, "
+                + "balance_amount REAL NOT NULL, "
                 + "is_paid INTEGER NOT NULL DEFAULT 0, "
                 + "paid_on INTEGER, "
                 + "UNIQUE(loan_id, installment_no))");
@@ -94,8 +94,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name TEXT NOT NULL, "
                 + "bank TEXT, "
-                + "limit_paise INTEGER NOT NULL, "
-                + "outstanding_paise INTEGER NOT NULL DEFAULT 0, "
+                + "credit_limit REAL NOT NULL, "
+                + "outstanding_amount REAL NOT NULL DEFAULT 0, "
                 + "statement_day INTEGER, "
                 + "due_day INTEGER)");
 
@@ -104,8 +104,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "card_id INTEGER NOT NULL REFERENCES " + T_CARDS + "(id) ON DELETE CASCADE, "
                 + "statement_date INTEGER NOT NULL, "
                 + "due_date INTEGER NOT NULL, "
-                + "total_due_paise INTEGER NOT NULL, "
-                + "min_due_paise INTEGER NOT NULL, "
+                + "total_due REAL NOT NULL, "
+                + "min_due REAL NOT NULL, "
                 + "is_paid INTEGER NOT NULL DEFAULT 0)");
 
         seedCategories(db);
@@ -141,7 +141,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Development only: rebuild everything
+        // Development only: rebuild everything (children first because of foreign keys)
         db.execSQL("DROP TABLE IF EXISTS " + T_STATEMENTS);
         db.execSQL("DROP TABLE IF EXISTS " + T_CARDS);
         db.execSQL("DROP TABLE IF EXISTS " + T_EMI);
