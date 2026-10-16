@@ -1,6 +1,7 @@
 package com.example.smartfinancemanager.utils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -42,5 +43,9 @@ public final class MoneyUtils {
         nf.setMinimumFractionDigits(2);
         nf.setMaximumFractionDigits(2);
         return "₹" + nf.format(BigDecimal.valueOf(paise, 2));
+    }
+    /** 1250.5 -> "1250.50" (plain text for filling an input field) */
+    public static String toPlainString(double amount) {
+        return BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 }
