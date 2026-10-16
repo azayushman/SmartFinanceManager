@@ -4,9 +4,10 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/placeholder_text"
+        android:text="Tap here to add a transaction (temporary)"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Home: dashboard coming on Day 2"
         android:textAppearance="?attr/textAppearanceTitleMedium" />
 </FrameLayout>
