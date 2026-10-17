@@ -57,6 +57,7 @@ public final class DateUtils {
         return day.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
     /** "October 2026" */
+    /** "October 2026" */
     public static String formatMonth(YearMonth month) {
         return month.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault()));
     }
