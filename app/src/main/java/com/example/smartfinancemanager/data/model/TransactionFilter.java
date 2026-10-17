@@ -1,6 +1,6 @@
 package com.example.smartfinancemanager.data.model;
 
-/** Describes which transactions to load and in what order. Defaults mean "everything, newest first". */
+/** describes which transactions to load and in what order. Defaults mean "everything, newest first". */
 public class TransactionFilter {
 
     public enum Sort { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
