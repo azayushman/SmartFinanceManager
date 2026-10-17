@@ -101,7 +101,7 @@ public class TransactionDao {
     }
 
     /**
-     * Total of all transactions of one type with fromInclusive <= date < toExclusive.
+     * Total of all trannsactions of one type with fromInclusive <= date < toExclusive.
      * Use DateUtils.startOfMonth / startOfNextMonth for a month, or 0 and Long.MAX_VALUE for all time.
      */
     public double sumByType(String type, long fromInclusive, long toExclusive) {
@@ -132,7 +132,6 @@ public class TransactionDao {
         }
     }
 
-    /** Makes %, _ and \ in the user's text match literally inside a LIKE pattern. */
     private static String escapeLike(String text) {
         return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
@@ -158,7 +157,7 @@ public class TransactionDao {
         }
         return list;
     }
-
+    /** Makes %, _ and \ in the user's text match literally inside a LIKE pattern. */
     private ContentValues toValues(Transaction t) {
         ContentValues values = new ContentValues();
         values.put("amount", t.getAmount());
