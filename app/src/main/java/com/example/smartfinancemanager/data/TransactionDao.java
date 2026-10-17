@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.example.smartfinancemanager.data.model.Transaction;
+import com.example.smartfinancemanager.data.model.TransactionFilter;
 import com.example.smartfinancemanager.utils.MoneyUtils;
 
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ public class TransactionDao {
                     + "t.date, t.payment_method, t.note, t.created_at "
                     + "FROM " + DatabaseHelper.T_TRANSACTIONS + " t "
                     + "JOIN " + DatabaseHelper.T_CATEGORIES + " c ON c.id = t.category_id ";
+
+    private static final String ORDER_NEWEST = "ORDER BY t.date DESC, t.id DESC ";
 
     private final DatabaseHelper helper;
 
@@ -51,23 +54,55 @@ public class TransactionDao {
     /** Returns null if no transaction has this id. */
     public Transaction getById(long id) {
         List<Transaction> list = query("WHERE t.id = ? ",
-                new String[]{String.valueOf(id)}, "");
+                new String[]{String.valueOf(id)}, ORDER_NEWEST, "");
         return list.isEmpty() ? null : list.get(0);
     }
 
     /** Newest first. */
     public List<Transaction> getAll() {
-        return query("", null, "");
+        return search(new TransactionFilter());
     }
 
     /** Newest first, at most 'limit' rows. */
     public List<Transaction> getRecent(int limit) {
-        return query("", null, "LIMIT " + limit);
+        return query("", null, ORDER_NEWEST, "LIMIT " + limit);
+    }
+
+    /** Search, filter and sort. All filter fields are optional. */
+    public List<Transaction> search(TransactionFilter filter) {
+        List<String> conditions = new ArrayList<>();
+        List<String> args = new ArrayList<>();
+
+        String text = filter.searchText == null ? "" : filter.searchText.trim();
+        if (!text.isEmpty()) {
+            conditions.add("t.description LIKE ? ESCAPE '\\'");
+            args.add("%" + escapeLike(text) + "%");
+        }
+        if (filter.type != null) {
+            conditions.add("t.type = ?");
+            args.add(filter.type);
+        }
+        if (filter.categoryId > 0) {
+            conditions.add("t.category_id = ?");
+            args.add(String.valueOf(filter.categoryId));
+        }
+        if (filter.fromDate > 0) {
+            conditions.add("t.date >= ?");
+            args.add(String.valueOf(filter.fromDate));
+        }
+        if (filter.toDate > 0) {
+            conditions.add("t.date < ?");
+            args.add(String.valueOf(filter.toDate));
+        }
+
+        String where = conditions.isEmpty()
+                ? "" : "WHERE " + String.join(" AND ", conditions) + " ";
+        return query(where, args.toArray(new String[0]), orderBy(filter.sort), "");
     }
 
     /**
      * Total of all transactions of one type with fromInclusive <= date < toExclusive.
-     * Use DateUtils.startOfMonth / startOfNextMonth for a month.
+     * Use DateUtils.startOfMonth / startOfNextMonth for a month, or 0 and Long.MAX_VALUE for all time.
      */
     public double sumByType(String type, long fromInclusive, long toExclusive) {
         SQLiteDatabase db = helper.getReadableDatabase();
@@ -80,8 +115,30 @@ public class TransactionDao {
         }
     }
 
-    private List<Transaction> query(String where, String[] args, String limitClause) {
-        String sql = SELECT_JOINED + where + "ORDER BY t.date DESC, t.id DESC " + limitClause;
+    private static String orderBy(TransactionFilter.Sort sort) {
+        if (sort == null) {
+            return ORDER_NEWEST;
+        }
+        switch (sort) {
+            case DATE_ASC:
+                return "ORDER BY t.date ASC, t.id ASC ";
+            case AMOUNT_DESC:
+                return "ORDER BY t.amount DESC, t.id DESC ";
+            case AMOUNT_ASC:
+                return "ORDER BY t.amount ASC, t.id ASC ";
+            case DATE_DESC:
+            default:
+                return ORDER_NEWEST;
+        }
+    }
+
+    /** Makes %, _ and \ in the user's text match literally inside a LIKE pattern. */
+    private static String escapeLike(String text) {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
+    private List<Transaction> query(String where, String[] args, String orderBy, String limitClause) {
+        String sql = SELECT_JOINED + where + orderBy + limitClause;
         List<Transaction> list = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
         try (Cursor c = db.rawQuery(sql, args)) {
