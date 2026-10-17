@@ -22,7 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".ui.loans.AddLoanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.loans.LoanDetailActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.transactions.AddTransactionActivity"
             android:exported="false" />
