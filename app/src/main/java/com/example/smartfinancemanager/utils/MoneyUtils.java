@@ -56,4 +56,5 @@ public final class MoneyUtils {
     public static String toPlainString(double amount) {
         return BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
+
 }
