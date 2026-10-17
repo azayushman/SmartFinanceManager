@@ -42,12 +42,14 @@ public final class MoneyUtils {
         return BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
-    /** 125050.5 -> "₹1,25,050.50" (Indian digit grouping) */
+    /** 125050.5 -> "₹1,25,050.50", -3000 -> "-₹3,000.00" (Indian digit grouping) */
     public static String format(double amount) {
+        BigDecimal value = BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP);
+        String sign = value.signum() < 0 ? "-" : "";
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.forLanguageTag("en-IN"));
         nf.setMinimumFractionDigits(2);
         nf.setMaximumFractionDigits(2);
-        return "₹" + nf.format(BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP));
+        return sign + "₹" + nf.format(value.abs());
     }
 
     /** 1250.5 -> "1250.50" (plain text for filling an input field) */

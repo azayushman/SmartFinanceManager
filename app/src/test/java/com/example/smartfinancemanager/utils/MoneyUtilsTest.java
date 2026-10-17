@@ -42,4 +42,9 @@ public class MoneyUtilsTest {
         assertEquals("1250.50", MoneyUtils.toPlainString(1250.5));
         assertEquals("0.30", MoneyUtils.toPlainString(0.1 + 0.2));
     }
+    @Test
+    public void format_handlesNegativeAmounts() {
+        assertEquals("-\u20B93,000.00", MoneyUtils.format(-3000));
+        assertEquals("\u20B90.00", MoneyUtils.format(-0.001));
+    }
 }
