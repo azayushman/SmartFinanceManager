@@ -15,4 +15,14 @@ public final class FinanceCalculator {
         }
         return MoneyUtils.round2((income - expense) / income * 100.0);
     }
+    /** Cards above this share of their limit are flagged (a common rule of thumb). */
+    public static final double UTILIZATION_WARNING_PERCENT = 30.0;
+
+    /** Share of the credit limit in use. Returns null when the limit is zero. */
+    public static Double utilizationPercent(double outstanding, double creditLimit) {
+        if (creditLimit <= 0) {
+            return null;
+        }
+        return MoneyUtils.round2(outstanding / creditLimit * 100.0);
+    }
 }
