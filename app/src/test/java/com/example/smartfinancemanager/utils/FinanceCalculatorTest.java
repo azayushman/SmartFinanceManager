@@ -28,4 +28,11 @@ public class FinanceCalculatorTest {
         Double rate = FinanceCalculator.savingsRatePercent(10000, 12000);
         assertEquals(-20.0, rate.doubleValue(), 0.0);
     }
+    @Test
+    public void utilizationPercent_rules() {
+        assertEquals(30.0, FinanceCalculator.utilizationPercent(15000, 50000).doubleValue(), 0.0);
+        assertEquals(120.0, FinanceCalculator.utilizationPercent(60000, 50000).doubleValue(), 0.0);
+        assertEquals(0.0, FinanceCalculator.utilizationPercent(0, 50000).doubleValue(), 0.0);
+        assertNull(FinanceCalculator.utilizationPercent(1000, 0));
+    }
 }

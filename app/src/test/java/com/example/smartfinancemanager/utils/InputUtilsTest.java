@@ -68,4 +68,27 @@ public class InputUtilsTest {
         assertEquals("8.5", InputUtils.formatPercent(8.5));
         assertEquals("0", InputUtils.formatPercent(0.0));
     }
+    @Test
+    public void parseDayOfMonth_rules() {
+        assertEquals(1, InputUtils.parseDayOfMonth("1"));
+        assertEquals(28, InputUtils.parseDayOfMonth("28"));
+        String[] bad = {"", "0", "29", "abc", "5.5", "-1"};
+        for (String input : bad) {
+            assertThrows("Should reject: " + input, IllegalArgumentException.class,
+                    () -> InputUtils.parseDayOfMonth(input));
+        }
+    }
+
+    @Test
+    public void parseNonNegativeAmount_rules() {
+        assertEquals(0.0, InputUtils.parseNonNegativeAmount(""), 0.0);
+        assertEquals(0.0, InputUtils.parseNonNegativeAmount("0"), 0.0);
+        assertEquals(0.0, InputUtils.parseNonNegativeAmount("0.00"), 0.0);
+        assertEquals(1250.5, InputUtils.parseNonNegativeAmount("1,250.50"), 0.0);
+        String[] bad = {"-1", "abc", "10.555", "100000001"};
+        for (String input : bad) {
+            assertThrows("Should reject: " + input, IllegalArgumentException.class,
+                    () -> InputUtils.parseNonNegativeAmount(input));
+        }
+    }
 }

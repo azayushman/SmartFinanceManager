@@ -90,4 +90,40 @@ public final class InputUtils {
     public static String formatPercent(double value) {
         return BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
     }
+    /** Day of the month from 1 to 28 (28 keeps the date valid in every month). */
+    public static int parseDayOfMonth(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Enter a day of the month");
+        }
+        int value;
+        try {
+            value = Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Enter a whole number");
+        }
+        if (value < 1 || value > 28) {
+            throw new IllegalArgumentException("Enter a day between 1 and 28");
+        }
+        return value;
+    }
+
+    /** Like MoneyUtils.parseAmount, but a blank field or 0 is allowed and means 0. */
+    public static double parseNonNegativeAmount(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return 0;
+        }
+        BigDecimal value;
+        try {
+            value = new BigDecimal(input.trim().replace(",", ""));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Enter a valid number");
+        }
+        if (value.signum() < 0) {
+            throw new IllegalArgumentException("Amount cannot be negative");
+        }
+        if (value.signum() == 0) {
+            return 0;
+        }
+        return MoneyUtils.parseAmount(input);
+    }
 }
