@@ -126,4 +126,24 @@ public final class InputUtils {
         }
         return MoneyUtils.parseAmount(input);
     }
+    public static final int MIN_AGE = 18;
+    public static final int MAX_AGE = 80;
+
+    /** Whole number of years from MIN_AGE to MAX_AGE. */
+    public static int parseAge(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            throw new IllegalArgumentException("Enter your age");
+        }
+        int value;
+        try {
+            value = Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Enter a whole number");
+        }
+        if (value < MIN_AGE || value > MAX_AGE) {
+            throw new IllegalArgumentException(
+                    "Enter an age between " + MIN_AGE + " and " + MAX_AGE);
+        }
+        return value;
+    }
 }
