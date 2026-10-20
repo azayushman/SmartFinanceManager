@@ -12,18 +12,32 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.smartfinancemanager.R;
+import com.example.smartfinancemanager.data.CreditCardDao;
 import com.example.smartfinancemanager.data.LoanDao;
+import com.example.smartfinancemanager.data.model.CreditCard;
 import com.example.smartfinancemanager.data.model.Loan;
+import com.example.smartfinancemanager.utils.FinanceCalculator;
 import com.example.smartfinancemanager.utils.MoneyUtils;
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.util.List;
+import java.util.Locale;
 
 public class LoansFragment extends Fragment {
 
-    private LoanDao dao;
-    private LoanAdapter adapter;
-    private TextView tvTotalEmi;
+    private LoanDao loanDao;
+    private CreditCardDao cardDao;
+    private LoanAdapter loanAdapter;
+    private CardAdapter cardAdapter;
+
+    private TextView tvSummary;
     private TextView tvEmpty;
+    private RecyclerView rvLoans;
+    private RecyclerView rvCards;
+    private ExtendedFloatingActionButton fab;
+
+    private boolean showingCards = false;
 
     public LoansFragment() {
         super(R.layout.fragment_loans);
@@ -33,21 +47,42 @@ public class LoansFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        dao = new LoanDao(requireContext());
-        tvTotalEmi = view.findViewById(R.id.tv_total_emi);
-        tvEmpty = view.findViewById(R.id.tv_loans_empty);
+        loanDao = new LoanDao(requireContext());
+        cardDao = new CreditCardDao(requireContext());
 
-        RecyclerView recycler = view.findViewById(R.id.rv_loans);
-        recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new LoanAdapter(loan -> {
+        tvSummary = view.findViewById(R.id.tv_total_emi);
+        tvEmpty = view.findViewById(R.id.tv_loans_empty);
+        rvLoans = view.findViewById(R.id.rv_loans);
+        rvCards = view.findViewById(R.id.rv_cards);
+        fab = view.findViewById(R.id.fab_add_loan);
+
+        rvLoans.setLayoutManager(new LinearLayoutManager(requireContext()));
+        loanAdapter = new LoanAdapter(loan -> {
             Intent intent = new Intent(requireContext(), LoanDetailActivity.class);
             intent.putExtra(LoanDetailActivity.EXTRA_LOAN_ID, loan.getId());
             startActivity(intent);
         });
-        recycler.setAdapter(adapter);
+        rvLoans.setAdapter(loanAdapter);
 
-        view.findViewById(R.id.fab_add_loan).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), AddLoanActivity.class)));
+        rvCards.setLayoutManager(new LinearLayoutManager(requireContext()));
+        cardAdapter = new CardAdapter(card -> {
+            Intent intent = new Intent(requireContext(), CardDetailActivity.class);
+            intent.putExtra(CardDetailActivity.EXTRA_CARD_ID, card.getId());
+            startActivity(intent);
+        });
+        rvCards.setAdapter(cardAdapter);
+
+        MaterialButtonToggleGroup toggle = view.findViewById(R.id.toggle_debt);
+        toggle.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (!isChecked) return;
+            showingCards = (checkedId == R.id.btn_show_cards);
+            reload();
+        });
+
+        fab.setOnClickListener(v -> {
+            Class<?> target = showingCards ? AddCardActivity.class : AddLoanActivity.class;
+            startActivity(new Intent(requireContext(), target));
+        });
     }
 
     @Override
@@ -57,10 +92,41 @@ public class LoansFragment extends Fragment {
     }
 
     private void reload() {
-        List<Loan> loans = dao.getAll();
-        adapter.submit(loans);
+        if (showingCards) {
+            showCards();
+        } else {
+            showLoans();
+        }
+    }
+
+    private void showLoans() {
+        rvCards.setVisibility(View.GONE);
+        rvLoans.setVisibility(View.VISIBLE);
+        fab.setText("Add loan");
+
+        List<Loan> loans = loanDao.getAll();
+        loanAdapter.submit(loans);
+        tvSummary.setText("Monthly EMIs (active loans): "
+                + MoneyUtils.format(loanDao.totalActiveMonthlyEmi()));
+        tvEmpty.setText("No loans yet.\nTap Add loan to track an EMI.");
         tvEmpty.setVisibility(loans.isEmpty() ? View.VISIBLE : View.GONE);
-        tvTotalEmi.setText("Monthly EMIs (active loans): "
-                + MoneyUtils.format(dao.totalActiveMonthlyEmi()));
+    }
+
+    private void showCards() {
+        rvLoans.setVisibility(View.GONE);
+        rvCards.setVisibility(View.VISIBLE);
+        fab.setText("Add card");
+
+        List<CreditCard> cards = cardDao.getAll();
+        cardAdapter.submit(cards);
+
+        Double overall = FinanceCalculator.utilizationPercent(
+                cardDao.totalOutstanding(), cardDao.totalCreditLimit());
+        tvSummary.setText(overall == null
+                ? "Overall card utilization: N/A"
+                : String.format(Locale.getDefault(),
+                "Overall card utilization: %.2f%%", overall));
+        tvEmpty.setText("No credit cards yet.\nTap Add card to start tracking.");
+        tvEmpty.setVisibility(cards.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

@@ -31,6 +31,15 @@
         <activity
             android:name=".ui.transactions.AddTransactionActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.loans.AddCardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.loans.CardDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.loans.AddStatementActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
