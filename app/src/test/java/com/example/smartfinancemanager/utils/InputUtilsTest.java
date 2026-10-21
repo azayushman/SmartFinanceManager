@@ -91,4 +91,15 @@ public class InputUtilsTest {
                     () -> InputUtils.parseNonNegativeAmount(input));
         }
     }
+    @Test
+    public void parseAge_rules() {
+        assertEquals(18, InputUtils.parseAge("18"));
+        assertEquals(30, InputUtils.parseAge("30"));
+        assertEquals(80, InputUtils.parseAge("80"));
+        String[] bad = {"", "17", "81", "abc", "30.5", "-5"};
+        for (String input : bad) {
+            assertThrows("Should reject: " + input, IllegalArgumentException.class,
+                    () -> InputUtils.parseAge(input));
+        }
+    }
 }
