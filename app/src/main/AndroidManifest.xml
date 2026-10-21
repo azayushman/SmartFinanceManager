@@ -40,6 +40,9 @@
         <activity
             android:name=".ui.loans.AddStatementActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.budgets.SetBudgetActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
