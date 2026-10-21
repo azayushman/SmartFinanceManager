@@ -15,6 +15,7 @@
         tools:targetApi="31">
 
         <activity
+            android:screenOrientation="portrait"
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -24,25 +25,32 @@
         </activity>
         <activity
             android:name=".ui.loans.AddLoanActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.loans.LoanDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.transactions.AddTransactionActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.loans.AddCardActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.loans.CardDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.loans.AddStatementActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.budgets.SetBudgetActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
