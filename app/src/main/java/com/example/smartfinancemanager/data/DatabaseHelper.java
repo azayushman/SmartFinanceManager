@@ -7,7 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DB_NAME = "smart_finance.db";
+    private static final String DEFAULT_DB_NAME = "smart_finance.db";
+    private static String dbName = DEFAULT_DB_NAME;
     private static final int DB_VERSION = 2;
 
     public static final String T_CATEGORIES = "categories";
@@ -21,14 +22,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper instance;
 
     public static synchronized DatabaseHelper getInstance(Context context) {
+        /** For tests only: switches to a separate, freshly created database file. */
         if (instance == null) {
             instance = new DatabaseHelper(context.getApplicationContext());
         }
         return instance;
     }
+    public static synchronized void useTestDatabase(Context context, String name) {
+        closeAndForget();
+        context.getApplicationContext().deleteDatabase(name);
+        dbName = name;
+    }
+
+    /** For tests only: goes back to the real database. */
+    public static synchronized void useDefaultDatabase() {
+        closeAndForget();
+        dbName = DEFAULT_DB_NAME;
+    }
+
+    private static void closeAndForget() {
+        if (instance != null) {
+            instance.close();
+            instance = null;
+        }
+    }
 
     private DatabaseHelper(Context context) {
-        super(context, DB_NAME, null, DB_VERSION);
+        super(context, dbName, null, DB_VERSION);
     }
 
     @Override
