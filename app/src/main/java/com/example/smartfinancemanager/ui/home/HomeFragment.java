@@ -105,7 +105,7 @@ public class HomeFragment extends Fragment {
         long to = DateUtils.startOfNextMonth(month);
 
         double income = dao.sumByType(Transaction.TYPE_INCOME, from, to);
-        double expense = dao.sumByType(Transaction.TYPE_EXPENSE, from, to);
+        double expense = dao.sumSpending(from, to);
         MonthSummary summary = new MonthSummary(income, expense);
 
         tvMonth.setText(DateUtils.formatMonth(month));
