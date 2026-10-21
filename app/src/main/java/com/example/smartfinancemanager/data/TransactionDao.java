@@ -104,6 +104,7 @@ public class TransactionDao {
      * Total of all trannsactions of one type with fromInclusive <= date < toExclusive.
      * Use DateUtils.startOfMonth / startOfNextMonth for a month, or 0 and Long.MAX_VALUE for all time.
      */
+
     public double sumByType(String type, long fromInclusive, long toExclusive) {
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "SELECT COALESCE(SUM(amount), 0) FROM " + DatabaseHelper.T_TRANSACTIONS
@@ -114,7 +115,35 @@ public class TransactionDao {
             return MoneyUtils.round2(sum);
         }
     }
+    /**
+     * Total of expense transactions whose category is in the given bucket
+     * ("NEED", "WANT" or "SAVING") with fromInclusive <= date < toExclusive.
+     */
+    public double sumByBucket(String bucket, long fromInclusive, long toExclusive) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        String sql = "SELECT COALESCE(SUM(t.amount), 0) FROM " + DatabaseHelper.T_TRANSACTIONS
+                + " t JOIN " + DatabaseHelper.T_CATEGORIES + " c ON c.id = t.category_id "
+                + "WHERE t.type = 'EXPENSE' AND c.bucket = ? AND t.date >= ? AND t.date < ?";
+        try (Cursor cursor = db.rawQuery(sql, new String[]{
+                bucket, String.valueOf(fromInclusive), String.valueOf(toExclusive)})) {
+            double sum = cursor.moveToFirst() ? cursor.getDouble(0) : 0;
+            return MoneyUtils.round2(sum);
+        }
+    }
 
+    /** Spending that is not savings: every expense except those in the SAVING bucket. */
+    public double sumSpending(long fromInclusive, long toExclusive) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        String sql = "SELECT COALESCE(SUM(t.amount), 0) FROM " + DatabaseHelper.T_TRANSACTIONS
+                + " t JOIN " + DatabaseHelper.T_CATEGORIES + " c ON c.id = t.category_id "
+                + "WHERE t.type = 'EXPENSE' AND (c.bucket IS NULL OR c.bucket <> 'SAVING') "
+                + "AND t.date >= ? AND t.date < ?";
+        try (Cursor cursor = db.rawQuery(sql, new String[]{
+                String.valueOf(fromInclusive), String.valueOf(toExclusive)})) {
+            double sum = cursor.moveToFirst() ? cursor.getDouble(0) : 0;
+            return MoneyUtils.round2(sum);
+        }
+    }
     private static String orderBy(TransactionFilter.Sort sort) {
         if (sort == null) {
             return ORDER_NEWEST;
